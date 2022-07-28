@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -19,5 +16,65 @@ model Users {
   hashedPassword     String
   hashedRefreshToken String?
 
+  campaigns Campaigns[]
+
   @@map("users")
+}
+
+model Campaigns {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  channels Channels[]
+
+  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("campaigns")
+}
+
+model Channels {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type String
+  text String
+
+  keyboard Keyboard?
+
+  Campaign   Campaigns @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+
+  @@map("channels")
+}
+
+model Keyboard {
+  id String @id @default(uuid())
+
+  buttons Buttons[]
+
+  channel   Channels @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId String   @unique
+
+  @@map("keyboard")
+}
+
+model Buttons {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  isInlineButton Boolean
+  isLinkButton   Boolean
+  text           String
+  link           String?
+
+  keyboard   Keyboard @relation(fields: [keyboardId], references: [id], onDelete: Cascade)
+  keyboardId String
+
+  @@map("buttons")
 }

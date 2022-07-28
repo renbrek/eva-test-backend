@@ -4,6 +4,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './common/guards';
 import { PrismaModule } from './prisma/prisma.module';
+import { UsersModule } from './users/users.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
+import { ChannelsModule } from './channels/channels.module';
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     AuthModule,
     PrismaModule,
+    UsersModule,
+    CampaignsModule,
+    ChannelsModule,
   ],
   controllers: [],
   providers: [
