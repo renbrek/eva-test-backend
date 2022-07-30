@@ -20,11 +20,34 @@ export class CampaignOwner implements CanActivate {
   }
 
   async isOwner(request: any): Promise<boolean> {
+    return this.checkByCampaignId(request) || this.checkByChannelId(request);
+  }
+
+  async checkByChannelId(request: any): Promise<boolean> {
+    const userId = request.user.sub;
+
+    const channelId = request.body.channelId;
+
+    const campaign = await this.prisma.campaigns.findFirst({
+      where: {
+        ownerId: userId,
+        channels: {
+          some: {
+            id: channelId,
+          },
+        },
+      },
+    });
+
+    if (!campaign) return false;
+
+    return true;
+  }
+
+  async checkByCampaignId(request: any): Promise<boolean> {
     const userId = request.user.sub;
 
     const campaignId = request.body.campaignId;
-
-    if (!campaignId) throw new BadRequestException("Campaign ID can't be null");
 
     const campaign = await this.prisma.campaigns.findFirst({
       where: {

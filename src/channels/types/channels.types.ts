@@ -1,19 +1,17 @@
-export class ChannelCreateDto {
-  campaignId: string;
+export type ChannelInfo = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
   type: string;
   text: string;
-}
-
-export class ChannelUpdateDto {
-  channelId: string;
   isActive: boolean;
-  text: string;
+  campaignId: string;
   isInlineKeyboard: boolean;
   buttons: {
-    buttonId?: string;
+    keyboardId: string;
     text: string;
     isInlineButton: boolean;
     isLinkButton: boolean;
     link?: string;
   }[];
-}
+};
