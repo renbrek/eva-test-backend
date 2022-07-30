@@ -29,7 +29,7 @@ export class CampaignOwner implements CanActivate {
     const campaign = await this.prisma.campaigns.findFirst({
       where: {
         id: campaignId,
-        userId,
+        ownerId: userId,
       },
     });
 

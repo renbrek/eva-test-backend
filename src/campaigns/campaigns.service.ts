@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Campaigns } from '@prisma/client';
+import { channel } from 'diagnostics_channel';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CampaignIdDto, CampaignUpdateDto, CampaignCreateDto } from './dto';
 
@@ -18,11 +19,9 @@ export class CampaignsService {
     const campaign = await this.prisma.campaigns.findFirst({
       where: {
         name: dto.name,
-        userId,
+        ownerId: userId,
       },
     });
-
-    console.log(`campaign ${campaign}`);
 
     if (campaign)
       throw new ConflictException(
@@ -32,17 +31,64 @@ export class CampaignsService {
     const newCampaign = await this.prisma.campaigns.create({
       data: {
         name: dto.name,
-        userId,
+        ownerId: userId,
+        channels: {
+          createMany: {
+            data: [
+              {
+                type: 'vk',
+                isActive: false,
+                text: '',
+              },
+              {
+                type: 'whatsup',
+                isActive: false,
+                text: '',
+              },
+              {
+                type: 'telegram',
+                isActive: false,
+                text: '',
+              },
+              {
+                type: 'sms',
+                isActive: false,
+                text: '',
+              },
+            ],
+          },
+        },
       },
     });
 
-    return newCampaign;
+    const channels = await this.prisma.channels.findMany({
+      where: {
+        campaignId: newCampaign.id,
+      },
+    });
+
+    channels.map(async (channel) => {
+      await this.prisma.keyboard.create({
+        data: {
+          channelId: channel.id,
+          isInline: false,
+        },
+      });
+    });
+
+    const createdCampaign = await this.prisma.campaigns.findUnique({
+      where: {
+        id: newCampaign.id,
+      },
+    });
+
+    return createdCampaign;
   }
 
   async getAllCampaigns(userId: string): Promise<Campaigns[]> {
     const campaigns = await this.prisma.campaigns.findMany({
       where: {
-        userId,
+        ownerId: userId,
       },
     });
 

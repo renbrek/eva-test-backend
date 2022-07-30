@@ -30,8 +30,8 @@ model Campaigns {
 
   channels Channels[]
 
-  user   Users  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  owner   Users  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
 
   @@map("campaigns")
 }
@@ -41,12 +41,13 @@ model Channels {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  type String
-  text String
+  type     String
+  text     String
+  isActive Boolean
 
   keyboard Keyboard?
 
-  Campaign   Campaigns @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign   Campaigns @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId String
 
   @@map("channels")
@@ -55,7 +56,8 @@ model Channels {
 model Keyboard {
   id String @id @default(uuid())
 
-  buttons Buttons[]
+  isInline Boolean
+  buttons  Buttons[]
 
   channel   Channels @relation(fields: [channelId], references: [id], onDelete: Cascade)
   channelId String   @unique
