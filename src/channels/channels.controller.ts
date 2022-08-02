@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpStatus,
   Post,
@@ -10,7 +11,7 @@ import {
 import { CampaignIdDto } from 'src/campaigns/dto';
 import { CampaignOwner } from 'src/common/guards/campaign-owner.guard';
 import { ChannelsService } from './channels.service';
-import { ChannelUpdateDto } from './dto';
+import { ChannelUpdateDto, DeleteButtonDto } from './dto';
 import { ChannelInfo } from './types';
 
 @Controller('channels')
@@ -31,5 +32,10 @@ export class ChannelsController {
   @HttpCode(HttpStatus.OK)
   updateChannelById(@Body() dto: ChannelUpdateDto) {
     return this.channelsService.updateChannelById(dto);
+  }
+
+  @Delete('deleteButtonById')
+  deleteButtonById(@Body() dto: DeleteButtonDto) {
+    return this.channelsService.deleteButtonById(dto);
   }
 }

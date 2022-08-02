@@ -10,10 +10,14 @@ export class ChannelUpdateDto {
   text: string;
   isInlineKeyboard: boolean;
   buttons: {
-    buttonId?: string;
+    id?: string;
     text: string;
     isInlineButton: boolean;
     isLinkButton: boolean;
     link?: string;
   }[];
+}
+
+export class DeleteButtonDto {
+  buttonId: string;
 }

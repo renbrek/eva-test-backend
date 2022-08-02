@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Buttons } from '@prisma/client';
 import { CampaignIdDto } from 'src/campaigns/dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ChannelUpdateDto } from './dto';
+import { ChannelUpdateDto, DeleteButtonDto } from './dto';
 import { ChannelInfo } from './types';
 @Injectable()
 export class ChannelsService {
@@ -39,6 +40,17 @@ export class ChannelsService {
           },
         });
 
+        const sortButtons = (a: Buttons, b: Buttons) => {
+          let lna = a.text;
+          let lnb = b.text;
+
+          if (lna < lnb) return -1;
+          if (lna > lnb) return 1;
+          return 0;
+        };
+
+        buttons.sort(sortButtons);
+
         channelsResponse.push({
           id: channel.id,
           createdAt: channel.createdAt,
@@ -53,10 +65,21 @@ export class ChannelsService {
       }),
     );
 
+    const sortChannels = (a: ChannelInfo, b: ChannelInfo) => {
+      let lna = a.type;
+      let lnb = b.type;
+
+      if (lna < lnb) return 1;
+      if (lna > lnb) return -1;
+      return 0;
+    };
+
+    channelsResponse.sort(sortChannels);
+
     return channelsResponse;
   }
 
-  async updateChannelById(dto: ChannelUpdateDto) {
+  async updateChannelById(dto: ChannelUpdateDto): Promise<void> {
     const channel = await this.prisma.channels.findUnique({
       where: {
         id: dto.channelId,
@@ -81,25 +104,6 @@ export class ChannelsService {
       },
     });
 
-    // await this.prisma.buttons.upsert({
-    //   where: {
-    //     id: 'asdfasdf',
-    //   },
-    //   update: {
-    //     text: 'button.text updated some',
-    //     isInlineButton: false,
-    //     isLinkButton: false,
-    //     link: undefined,
-    //   },
-    //   create: {
-    //     text: 'button.text',
-    //     isInlineButton: false,
-    //     isLinkButton: false,
-    //     link: undefined,
-    //     keyboardId: '0a746dd5-b71a-4326-b675-d2c850189641',
-    //   },
-    // });
-
     await Promise.all(
       dto.buttons.map(async (button) => {
         const keyboard = await this.prisma.keyboard.findUnique({
@@ -108,8 +112,8 @@ export class ChannelsService {
           },
         });
 
-        if (!button.buttonId) {
-          console.log('create');
+        if (!button.id) {
+          console.log('create ');
 
           await this.prisma.buttons.create({
             data: {
@@ -122,12 +126,12 @@ export class ChannelsService {
           });
         }
 
-        if (button.buttonId) {
+        if (button.id) {
           console.log(`upsert`);
 
           await this.prisma.buttons.upsert({
             where: {
-              id: button.buttonId,
+              id: button.id,
             },
             update: {
               text: button.text,
@@ -146,13 +150,21 @@ export class ChannelsService {
         }
       }),
     );
+  }
 
-    const updatedChannel = await this.prisma.channels.findUnique({
+  async deleteButtonById(dto: DeleteButtonDto) {
+    const button = await this.prisma.buttons.findUnique({
       where: {
-        id: dto.channelId,
+        id: dto.buttonId,
       },
     });
 
-    return updatedChannel;
+    if (!button) throw new NotFoundException('Button does not exists');
+
+    await this.prisma.buttons.delete({
+      where: {
+        id: dto.buttonId,
+      },
+    });
   }
 }
